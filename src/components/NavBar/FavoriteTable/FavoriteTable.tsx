@@ -1,34 +1,22 @@
 import { Person } from "@/models";
-import { addFavorite } from "@/redux/states";
+import { removeFavorites } from "@/redux/states";
 import { AppStore } from "@/redux/store";
-import { Checkbox } from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { IconButton } from "@mui/material";
 import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-export interface PeopleTableInterface {}
+export interface FavoriteTableInterface {}
 
-const PeopleTable: React.FC<PeopleTableInterface> = () => {
-  const [selectedPeople, setSelectedPeople] = useState<Person[]>([]);
+const FavoriteTable: React.FC<FavoriteTableInterface> = () => {
   const pageSize = 5;
   const dispatch = useDispatch();
 
-  const people = useSelector((store: AppStore) => store.people);
   const favorites = useSelector((store: AppStore) => store.favorites);
 
-  const findPerson = (person: Person) =>
-    !!favorites.find((p) => p.id === person.id);
-
-  const filterPerson = (person: Person) =>
-    favorites.filter((p) => p.id !== person.id);
-
-  const handleChange = (person: Person) => {
-    const filteredPeople = findPerson(person)
-      ? filterPerson(person)
-      : [...selectedPeople, person];
-
-    dispatch(addFavorite(filteredPeople));
-    setSelectedPeople(filteredPeople);
+  const handleClick = (person: Person) => {
+    dispatch(removeFavorites(person));
   };
 
   const columns: GridColDef[] = [
@@ -41,11 +29,14 @@ const PeopleTable: React.FC<PeopleTableInterface> = () => {
       renderCell: (params: GridRenderCellParams) => (
         <>
           {
-            <Checkbox
-              size="small"
-              checked={findPerson(params.row)}
-              onChange={() => handleChange(params.row)}
-            />
+            // <Checkbox
+            //   size="small"
+            //   checked={findPerson(params.row)}
+            //   onChange={() => handleChange(params.row)}
+            // />
+            <IconButton onClick={() => handleClick(params.row)}>
+              <DeleteIcon />
+            </IconButton>
           }
         </>
       ),
@@ -80,10 +71,6 @@ const PeopleTable: React.FC<PeopleTableInterface> = () => {
     },
   ];
 
-  useEffect(() => {
-    setSelectedPeople(favorites);
-  }, [favorites]);
-
   return (
     <DataGrid
       disableColumnSelector
@@ -92,10 +79,10 @@ const PeopleTable: React.FC<PeopleTableInterface> = () => {
       pageSize={pageSize}
       rowsPerPageOptions={[pageSize]}
       getRowId={(row: any) => row.id}
-      rows={people}
+      rows={favorites}
       columns={columns}
     />
   );
 };
 
-export default PeopleTable;
+export default FavoriteTable;
